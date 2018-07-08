@@ -92,22 +92,23 @@ passport.use(
 
       hdb_callout
         .callHarperDB(call_object, operation)
-        .then(user => {
-          console.log(user);
-          if (user.active) {
-            return done(null, {
-              ...user,
-              password,
-              endpoint_url: req.body.extended,
-              endpoint_port: req.body.endpoint_port
-            });
+        .then(response => {
+          let user = {
+            endpoint_url: req.body.extended,
+            endpoint_port: req.body.endpoint_port
+          };
+
+          if (response.error && response.statusCode === 403) {
+            user = { ...user, username, super_user: false };
+          } else if (response.active) {
+            user = { ...user, ...response, super_user: true };
           } else {
-            return done(null, false, {
-              message: "Invalid credentials"
-            });
+            throw new Error("Invalid credentials");
           }
+
+          return done(null, user);
         })
-        .catch(err => done(null, false, { message: err }));
+        .catch(err => done(null, false, { message: err.message }));
     }
   )
 );
