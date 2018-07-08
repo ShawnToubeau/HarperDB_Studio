@@ -89,43 +89,29 @@ passport.use(
       var operation = {
         operation: "user_info"
       };
-      hdb_callout.callHarperDB(call_object, operation, function(
-        err,
-        user,
-        statusCode
-      ) {
-        if (err) {
-          return done(null, false, {
-            message: err
-          });
-        }
 
-        if (user && user.active) {
-          user.password = password;
-          user.endpoint_url = req.body.endpoint_url;
-          user.endpoint_port = req.body.endpoint_port;
-          user.super_admin = true;
-          return done(null, user);
-        } else if (statusCode == 403) {
-          user.username = username;
-          user.password = password;
-          user.endpoint_url = req.body.endpoint_url;
-          user.endpoint_port = req.body.endpoint_port;
-          user.super_admin = false;
-          return done(null, user);
-        } else if (user) {
-          return done(null, false, {
-            message: JSON.stringify(user)
-          });
-        } else {
-          return done(null, false, {
-            message: "Invalid credentials"
-          });
-        }
-      });
+      hdb_callout
+        .callHarperDB(call_object, operation)
+        .then(user => {
+          console.log(user);
+          if (user.active) {
+            return done(null, {
+              ...user,
+              password,
+              endpoint_url: req.body.extended,
+              endpoint_port: req.body.endpoint_port
+            });
+          } else {
+            return done(null, false, {
+              message: "Invalid credentials"
+            });
+          }
+        })
+        .catch(err => done(null, false, { message: err }));
     }
   )
 );
+
 passport.serializeUser(function(user, done) {
   done(null, user);
 });
