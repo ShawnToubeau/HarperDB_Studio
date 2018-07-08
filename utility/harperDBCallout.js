@@ -1,53 +1,45 @@
-const http = require("http");
+"use strict";
 
-function callHarperDB(call_object, operation, callback) {
-  var options = {
-    method: "POST",
-    hostname: call_object.endpoint_url,
-    port: call_object.endpoint_port,
-    path: "/",
-    headers: {
-      "content-type": "application/json",
-      authorization:
-        "Basic " +
-        new Buffer(call_object.username + ":" + call_object.password).toString(
-          "base64"
-        ),
-      "cache-control": "no-cache"
+const { HarperDBConnect } = require("harperdb-connect");
+
+async function callHarperDB(call_object, operation, unsupported_callback) {
+  if (unsupported_callback) {
+    try {
+      throw new Error("Do not use a callback with callHarperDB");
+    } catch (err) {
+      console.warn(
+        "callHarperDB removed support for callbacks. Update the following method(s) to use .then and .catch blocks."
+      );
+      console.error(err);
     }
-  };
+  }
+  const db = new HarperDBConnect();
 
-  var http_req = http.request(options, function(hdb_res) {
-    var chunks = [];
-
-    hdb_res.on("data", function(chunk) {
-      chunks.push(chunk);
-    });
-
-    hdb_res.on("end", function() {
-      var body = Buffer.concat(chunks);
-      if (isJson(body)) {
-        return callback(null, JSON.parse(body), hdb_res.statusCode);
-      } else {
-        return callback(body, null);
-      }
-    });
-  });
-
-  http_req.on("error", function(chunk) {
-    return callback("Failed to connect", null);
-  });
-
-  http_req.write(JSON.stringify(operation));
-  http_req.end();
-}
-
-function isJson(s) {
   try {
-    JSON.parse(s);
-    return true;
-  } catch (e) {
-    return false;
+    db.setAuthorization(call_object.username, call_object.password);
+
+    const regex = /^(https?:\/\/)/gm;
+    const { endpoint_url, endpoint_port } = call_object;
+    const url = regex.test(endpoint_url)
+      ? `${endpoint_url}:${endpoint_port}`
+      : `http://${endpoint_url}:${endpoint_port}`;
+
+    await db.connect(url);
+
+    db.setDefaultOptions({
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "cache-control": "no-cache"
+      },
+      json: true
+    });
+
+    let res = await db.request(operation, true);
+
+    return res;
+  } catch (err) {
+    return err;
   }
 }
 
