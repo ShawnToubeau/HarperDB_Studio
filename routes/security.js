@@ -16,15 +16,23 @@ router.get("/", [isAuthenticated, isSuperAdmin], function(req, res) {
     endpoint_port: req.user.endpoint_port
   };
 
-  hdb_callout.callHarperDB(call_object, operation, function(err, users) {
-    // console.error(err);
-    // console.log(logs);
-    return res.render("security", {
-      user: req.user,
-      users: JSON.stringify(users),
-      error: err
-    });
-  });
+  hdb_callout
+    .callHarperDB(call_object, operation)
+    .then(users => {
+      console.log(users);
+      return res.render("security", {
+        user: req.user,
+        users: JSON.stringify(users)
+      });
+    })
+    .catch(err =>
+      res.render("user_detail", {
+        user: req.user,
+        detail_user: {},
+        error: err,
+        user: req.user
+      })
+    );
 });
 
 router.post("/update_user_active", [isAuthenticated, isSuperAdmin], function(

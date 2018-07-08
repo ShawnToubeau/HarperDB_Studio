@@ -94,14 +94,14 @@ passport.use(
         .callHarperDB(call_object, operation)
         .then(response => {
           let user = {
-            endpoint_url: req.body.extended,
+            endpoint_url: req.body.endpoint_url,
             endpoint_port: req.body.endpoint_port
           };
 
           if (response.error && response.statusCode === 403) {
-            user = { ...user, username, super_user: false };
+            user = { ...user, username, password, super_user: false };
           } else if (response.active) {
-            user = { ...user, ...response, super_user: true };
+            user = { ...user, ...response, password, super_user: true };
           } else {
             throw new Error("Invalid credentials");
           }
