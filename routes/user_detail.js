@@ -25,19 +25,13 @@ router.get("/", function(req, res) {
   hdb_callout
     .callHarperDB(call_object, operation)
     .then(users => {
-      var detail_user = null;
-      for (u in users) {
-        if (req.query.un === users[u].username) {
-          detail_user = users[u];
-        }
-      }
+      const detail_user = users.find(user => req.query.un === user.username);
 
       if (detail_user) {
         return res.render("user_detail", {
           user: req.user,
           detail_user: detail_user,
-          json_detail_user: JSON.stringify(detail_user),
-          user: req.user
+          json_detail_user: JSON.stringify(detail_user)
         });
       }
     })
@@ -45,8 +39,7 @@ router.get("/", function(req, res) {
       return res.render("user_detail", {
         user: req.user,
         detail_user: {},
-        error: err,
-        user: req.user
+        error: err
       });
     });
 });

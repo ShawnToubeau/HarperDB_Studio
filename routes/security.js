@@ -1,4 +1,7 @@
-/* Todo
+/* TODO
+ * The following issues have been discovered in this file 
+ * and require fixing. Will open and link to GitHub repos
+ * on following commit.
  *
  * Issues
  * 1. should inspect err for statusCode and send that instead of default 400

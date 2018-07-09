@@ -3,6 +3,7 @@
 const { HarperDBConnect } = require("harperdb-connect");
 
 async function callHarperDB(call_object, operation, unsupported_callback) {
+  // remove this code block on completion of #32
   if (unsupported_callback) {
     try {
       throw new Error("Do not use a callback with callHarperDB");
