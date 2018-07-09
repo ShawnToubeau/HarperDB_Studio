@@ -1,3 +1,7 @@
+/* getting tired of rewriting the same comments
+ * on unhandled errors. Will comment: '// UH E' 
+ * to indicate unhandled error. - Ethan
+ * */
 const express = require("express"),
   router = express.Router(),
   hdb_callout = require("../utility/harperDBCallout"),
@@ -17,15 +21,18 @@ router.get("/", [isAuthenticated, breadcrumb], function(req, res) {
     endpoint_port: req.user.endpoint_port
   };
 
-  hdb_callout.callHarperDB(call_object, operation, function(err, allSchema) {
-    return res.render("schema", {
-      schemas: sortSchemas(allSchema),
-      user: req.user
-    });
-  });
+  hdb_callout
+    .callHarperDB(call_object, operation)
+    .then(allSchema =>
+      res.render("schema", {
+        schemas: sortSchemas(allSchema),
+        user: req.user
+      })
+    )
+    .catch(err => err); // UH E
 });
 
-router.post("/", isAuthenticated, function(req, res) {
+router.post("/", isAuthenticated, async function(req, res) {
   var operation = {
     operation: "describe_all"
   };
@@ -50,21 +57,23 @@ router.post("/", isAuthenticated, function(req, res) {
     endpoint_port: req.user.endpoint_port
   };
 
-  hdb_callout.callHarperDB(call_object, operationAdd, function(err, success) {
-    hdb_callout.callHarperDB(call_object, operation, function(
-      error,
-      allSchema
-    ) {
-      return res.render("schema", {
-        message: JSON.stringify(success),
-        schemas: allSchema,
-        user: req.user
-      });
+  try {
+    let message = await hdb_callout.callHarperDB(call_object, operationAdd);
+    let allSchema = await hdb_callout.callHarperDB(call_object, operation);
+
+    return res.render("schema", {
+      message: JSON.stringify(message),
+      schemas: allSchema,
+      user: req.user
     });
-  });
+  } catch (err) {
+    return err; // UH E
+  }
 });
 
 router.get("/:schemaName", isAuthenticated, function(req, res) {
+  // could use object destructuring here; probably other places this can be updated too
+  // i.e. call_object = { ...req.user }
   var call_object = {
     username: req.user.username,
     password: req.user.password,
@@ -77,16 +86,19 @@ router.get("/:schemaName", isAuthenticated, function(req, res) {
     schema: req.params.schemaName
   };
 
-  hdb_callout.callHarperDB(call_object, operation, function(error, schema) {
-    res.render("schema_name", {
-      schemaName: req.params.schemaName,
-      schema: schema,
-      user: req.user
-    });
-  });
+  hdb_callout
+    .callHarperDB(call_object, operation)
+    .then(schema =>
+      res.render("schema_name", {
+        schemaName: req.params.schemaName,
+        schema: schema,
+        user: req.user
+      })
+    )
+    .catch(err => err); // UH E
 });
 
-router.post("/addtable/:schemaName", isAuthenticated, function(req, res) {
+router.post("/addtable/:schemaName", isAuthenticated, async function(req, res) {
   var operationAdd = {
     operation: "create_table",
     schema: req.params.schemaName,
@@ -106,19 +118,25 @@ router.post("/addtable/:schemaName", isAuthenticated, function(req, res) {
     schema: req.params.schemaName
   };
 
-  hdb_callout.callHarperDB(call_object, operationAdd, function(err, success) {
-    hdb_callout.callHarperDB(call_object, operation, function(error, schema) {
-      res.render("schema_name", {
-        schemaName: req.params.schemaName,
-        schema: schema,
-        message: JSON.stringify(success),
-        user: req.user
-      });
+  try {
+    let message = await hdb_callout.callHarperDB(call_object, operationAdd);
+    let schema = await hdb_callout.callHarperDB(call_object, operation);
+
+    return res.render("schema_name", {
+      schemaName: req.params.schemaName,
+      schema: schema,
+      message: JSON.stringify(message),
+      user: req.user
     });
-  });
+  } catch (err) {
+    return err; // UH E
+  }
 });
 
-router.post("/upload_csv/:schemaName", isAuthenticated, function(req, res) {
+router.post("/upload_csv/:schemaName", isAuthenticated, async function(
+  req,
+  res
+) {
   var call_object = {
     username: req.user.username,
     password: req.user.password,
@@ -130,41 +148,41 @@ router.post("/upload_csv/:schemaName", isAuthenticated, function(req, res) {
     operation: "describe_schema",
     schema: req.body.schemaName
   };
-  var operationCSV = {};
+  var operationCSV = {
+    schema: req.body.schemaName,
+    table: req.body.tableName
+  };
 
   if (req.body.csvType == "file") {
     operationCSV = {
       operation: "csv_file_load",
-      schema: req.body.schemaName,
-      table: req.body.tableName,
       file_path: req.body.csvPath
     };
   } else if (req.body.csvType == "url") {
     operationCSV = {
       operation: "csv_url_load",
-      schema: req.body.schemaName,
-      table: req.body.tableName,
       csv_url: req.body.csvUrl
     };
   } else {
     operationCSV = {
       operation: "csv_data_load",
-      schema: req.body.schemaName,
-      table: req.body.tableName,
       data: req.body.csvData
     };
   }
 
-  hdb_callout.callHarperDB(call_object, operationCSV, function(err, success) {
-    hdb_callout.callHarperDB(call_object, operation, function(error, schema) {
-      res.render("schema_name", {
-        schemaName: req.params.schemaName,
-        schema: schema,
-        message: JSON.stringify(success),
-        user: req.user
-      });
+  try {
+    let message = await hdb_callout.callHarperDB(call_object, operationCSV);
+    let schema = await hdb_callout.callHarperDB(call_object, operation);
+
+    return res.render("schema_name", {
+      schemaName: req.params.schemaName,
+      schema: schema,
+      message: JSON.stringify(message),
+      user: req.user
     });
-  });
+  } catch (err) {
+    return err; // UH E
+  }
 });
 
 router.post("/delete", isAuthenticated, function(req, res) {
@@ -175,31 +193,28 @@ router.post("/delete", isAuthenticated, function(req, res) {
     endpoint_port: req.user.endpoint_port
   };
 
-  var operation = {
-    operation: "describe_schema",
+  var operationdelete = {
     schema: req.body.schemaName
   };
-  var operationdelete = {};
 
   if (req.body.deleteType == "schema") {
     operationdelete = {
-      operation: "drop_schema",
-      schema: req.body.schemaName
+      operation: "drop_schema"
     };
-  } else
+  } else {
     operationdelete = {
       operation: "drop_table",
-      schema: req.body.schemaName,
       table: req.body.tableName
     };
+  }
 
-  hdb_callout.callHarperDB(call_object, operationdelete, function(
-    error,
-    schema
-  ) {
-    if (req.body.deleteType == "schema") res.redirect("/schema");
-    else res.redirect("/schema/" + req.body.schemaName);
-  });
+  hdb_callout
+    .callHarperDB(call_object, operationdelete)
+    .then(schema => {
+      if (req.body.deleteType == "schema") res.redirect("/schema");
+      else res.redirect("/schema/" + req.body.schemaName);
+    })
+    .catch(err => err); // UH E
 });
 
 router.post("/records", isAuthenticated, function(req, res) {
@@ -218,23 +233,22 @@ router.post("/records", isAuthenticated, function(req, res) {
     sql: "SELECT COUNT(*) AS num FROM " + tableName
   };
 
-  hdb_callout.callHarperDB(call_object, operation, function(err, message) {
-    if (err) {
-      return res.status(400).send(err);
-    }
-
-    return res.status(200).send(message);
-  });
+  hdb_callout
+    .callHarperDB(call_object, operation)
+    .then(message => res.status(200).send(message))
+    .catch(err => res.status(400).send(err)); // check error statuscode
 });
 
-router.post("/csv", isAuthenticated, function(req, res) {
+router.post("/csv", isAuthenticated, async function(req, res) {
   var operation = {
     operation: "describe_all"
   };
+
   var operationCSV = {
     schema: req.body.schemaName,
     table: req.body.selectTableName
   };
+
   if (req.body.csvType == "file") {
     operationCSV.operation = "csv_file_load";
     operationCSV.file_path = req.body.csvPath;
@@ -246,7 +260,6 @@ router.post("/csv", isAuthenticated, function(req, res) {
     operationCSV.data = req.body.csvData;
   }
 
-  console.log(operationCSV);
   var call_object = {
     username: req.user.username,
     password: req.user.password,
@@ -254,18 +267,17 @@ router.post("/csv", isAuthenticated, function(req, res) {
     endpoint_port: req.user.endpoint_port
   };
 
-  hdb_callout.callHarperDB(call_object, operationCSV, function(err, success) {
-    hdb_callout.callHarperDB(call_object, operation, function(
-      error,
-      allSchema
-    ) {
-      return res.render("schema", {
-        message: JSON.stringify(success),
-        schemas: allSchema,
-        user: req.user
-      });
+  try {
+    let message = await hdb_callout.callHarperDB(call_object, operationCSV);
+    let allSchema = await hdb_callout.callHarperDB(call_object, operation);
+    return res.render("schema", {
+      message: JSON.stringify(message),
+      schemas: allSchema,
+      user: req.user
     });
-  });
+  } catch (err) {
+    return err; // UH E
+  }
 });
 
 module.exports = router;
