@@ -53,64 +53,59 @@ router.put("/unfavorite/:id/:isFavorited", isAuthenticated, function(req, res) {
     ]
   };
 
-  hdb_callout.callHarperDB(call_object, operation, function(error, result) {
-    return res.status(200).send(result);
-  });
+  hdb_callout
+    .callHarperDB(call_object, operation)
+    .then(result => res.status(200).send(result))
+    .catch(err => res.status(400).send(err)); // inspect err for status code
 });
 
-router.get("/public/:key", function(req, res) {
+// example of using async/await to replace nested callHarperDB method calls
+router.get("/publis/:key", async function(req, res) {
+  var decode64 = Buffer.from(req.params.key, "base64").toString("ascii");
+  var bytes = CryptoJS.AES.decrypt(decode64, secretkey);
+  var decryptedObject = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+  var call_object = {
+    username: decryptedObject.un,
+    password: decryptedObject.pw,
+    endpoint_url: decryptedObject.eurl,
+    endpoint_port: decryptedObject.epp
+  };
+
+  var operation = {
+    operation: "sql",
+    sql:
+      "SELECT * FROM harperdb_studio.livelink WHERE id ='" +
+      decryptedObject.id +
+      "' "
+  };
+
   try {
-    var decode64 = Buffer.from(req.params.key, "base64").toString("ascii");
-    var bytes = CryptoJS.AES.decrypt(decode64, secretkey);
-    var decryptedObject = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-    var call_object = {
-      username: decryptedObject.un,
-      password: decryptedObject.pw,
-      endpoint_url: decryptedObject.eurl,
-      endpoint_port: decryptedObject.epp
-    };
-
-    var operation = {
-      operation: "sql",
-      sql:
-        "SELECT * FROM harperdb_studio.livelink WHERE id ='" +
-        decryptedObject.id +
-        "' "
-    };
-
-    hdb_callout.callHarperDB(call_object, operation, function(
-      error,
-      sqlLivelink
-    ) {
-      if (sqlLivelink.length > 0) {
-        var operation2 = {
-          operation: "sql",
-          sql: sqlLivelink[0].sql
-        };
-
-        hdb_callout.callHarperDB(call_object, operation2, function(
-          error2,
-          sqlData
-        ) {
-          res.render("live_link", {
-            graphDetail: JSON.stringify({
-              data: sqlData,
-              options: sqlLivelink[0].options,
-              graphType: sqlLivelink[0].graphType
-            }),
-            notes: sqlLivelink[0].notes,
-            livelinkName: sqlLivelink[0].livelinkName,
-            isFavorited: sqlLivelink[0].isFavorited
-          });
-        });
-      } else {
-        res.render("live_link", {
-          error: "live link is not found"
-        });
-      }
-    });
+    let sqlLiveLink = await hdb_callout.callHarperDB(call_object, operation);
+    if (sqlLiveLink.length > 0) {
+      operation = {
+        operation: "sql",
+        sql: sqlLiveLink[0].sql
+      };
+      let sqlData = await hdb_callout.callHarperDB(call_object, operation);
+      res.render("live_link", {
+        graphDetail: JSON.stringify({
+          data: sqlData,
+          options: sqlLivelink[0].options,
+          graphType: sqlLivelink[0].graphType
+        }),
+        notes: sqlLivelink[0].notes,
+        livelinkName: sqlLivelink[0].livelinkName,
+        isFavorited: sqlLivelink[0].isFavorited
+      });
+    } else {
+      res.render("live_link", {
+        error: "live link is not found"
+      });
+    }
   } catch (err) {
+    // what if we have a network error?
+    // **we have to figure out better error handling**
     res.render("live_link", {
       error: err.message
     });
@@ -130,9 +125,10 @@ router.get("/delete/:id", isAuthenticated, function(req, res) {
     table: "livelink",
     hash_values: [req.params.id]
   };
-  hdb_callout.callHarperDB(call_object, operation, function(error, result) {
-    return res.status(200).send(result);
-  });
+  hdb_callout
+    .callHarperDB(call_object, operation)
+    .then(result => res.status(200).send(result))
+    .catch(err => res.status(400).send(err)); // inspect err for status code
 });
 
 var encryptLivelink = (req, id) => {
