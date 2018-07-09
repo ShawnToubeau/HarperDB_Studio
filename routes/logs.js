@@ -22,13 +22,20 @@ router.get("/", isAuthenticated, function(req, res) {
     endpoint_port: req.user.endpoint_port
   };
 
-  hdb_callout.callHarperDB(call_object, operation, function(err, logs) {
-    return res.render("logs", {
-      user: req.user,
-      logs: JSON.stringify(mapDynamicToStableObject(reduceTypeLogs(logs))),
-      error: err
-    });
-  });
+  hdb_callout
+    .callHarperDB(call_object, operation)
+    .then(logs =>
+      res.render("logs", {
+        user: req.user,
+        logs: JSON.stringify(mapDynamicToStableObject(reduceTypeLogs(logs)))
+      })
+    )
+    .catch(err =>
+      res.render("logs", {
+        user: req.user,
+        error: err
+      })
+    );
 });
 
 router.post("/search", isAuthenticated, function(req, res) {
@@ -39,18 +46,14 @@ router.post("/search", isAuthenticated, function(req, res) {
     endpoint_port: req.user.endpoint_port
   };
 
-  hdb_callout.callHarperDB(connection, JSON.parse(req.body.operation), function(
-    err,
-    result
-  ) {
-    if (err) {
-      return res.status(400).send(result);
-    }
-    var obj = {
-      result: mapDynamicToStableObject(reduceTypeLogs(result))
-    };
-    return res.status(200).send(obj);
-  });
+  hdb_callout
+    .callHarperDB(connection, JSON.parse(req.body.operation))
+    .then(result =>
+      res.status(200).send({
+        result: mapDynamicToStableObject(reduceTypeLogs(result))
+      })
+    )
+    .catch(err => res.status(400).send(err)); // analyze error status code
 });
 
 router.get("/individual/:logDetail", isAuthenticated, function(req, res) {
