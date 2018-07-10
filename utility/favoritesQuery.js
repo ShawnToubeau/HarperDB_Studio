@@ -1,92 +1,84 @@
 var hdb_callout = require("./harperDBCallout");
 var guid = require("guid");
 
-var setFavorites = function(req, res, favoriteObj) {
-  return new Promise(function(resolve) {
-    var call_object = {
-      username: req.user.username,
-      password: req.user.password,
-      endpoint_url: req.user.endpoint_url,
-      endpoint_port: req.user.endpoint_port
-    };
+var setFavorites = async function(req, res, favoriteObj) {
+  var call_object = {
+    username: req.user.username,
+    password: req.user.password,
+    endpoint_url: req.user.endpoint_url,
+    endpoint_port: req.user.endpoint_port
+  };
 
-    var record = {
-      sql: favoriteObj.sql,
-      name: favoriteObj.name,
-      note: favoriteObj.note,
-      username: req.user.username,
-      date: new Date(),
-      id: guid.create()
-    };
+  var record = {
+    sql: favoriteObj.sql,
+    name: favoriteObj.name,
+    note: favoriteObj.note,
+    username: req.user.username,
+    date: new Date(),
+    id: guid.create()
+  };
 
-    var operation = {
-      operation: "insert",
-      schema: "harperdb_studio",
-      table: "query",
-      records: [record]
-    };
-    hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-      if (err || result.error) {
-        createUserFavoriteTable(req, res).then(() => {
-          hdb_callout.callHarperDB(call_object, operation, function(
-            err2,
-            result2
-          ) {
-            resolve(result2);
-          });
-        });
-      }
-      resolve(result);
-    });
-  });
+  var operation = {
+    operation: "insert",
+    schema: "harperdb_studio",
+    table: "query",
+    records: [record]
+  };
+
+  try {
+    let result = await hdb_callout.callHarperDB(call_object, operation);
+    if (result.error) {
+      await createUserFavoriteTable(req, res);
+      result = await hdb_callout.callHarperDB(call_object, operation);
+    }
+    return result;
+  } catch (err) {
+    return err; // UH E
+  }
 };
+var setLiveLink = async function(req, en_url, id) {
+  var call_object = {
+    username: req.user.username,
+    password: req.user.password,
+    endpoint_url: req.user.endpoint_url,
+    endpoint_port: req.user.endpoint_port
+  };
 
-var setLiveLink = function(req, en_url, id) {
-  return new Promise(function(resolve) {
-    var call_object = {
-      username: req.user.username,
-      password: req.user.password,
-      endpoint_url: req.user.endpoint_url,
-      endpoint_port: req.user.endpoint_port
-    };
+  var record = {
+    en_url: en_url,
+    date: new Date(),
+    id: id.value,
+    username: req.user.username,
+    livelinkName: req.body.livelinkName,
+    sql: req.body.sql,
+    options: req.body.options,
+    livelinkName: req.body.livelinkName,
+    notes: req.body.notes,
+    graphType: req.body.graphType,
+    isFavorited: req.body.isFavorited
+  };
 
-    var record = {
-      en_url: en_url,
-      date: new Date(),
-      id: id.value,
-      username: req.user.username,
-      livelinkName: req.body.livelinkName,
-      sql: req.body.sql,
-      options: req.body.options,
-      livelinkName: req.body.livelinkName,
-      notes: req.body.notes,
-      graphType: req.body.graphType,
-      isFavorited: req.body.isFavorited
-    };
+  var operation = {
+    operation: "insert",
+    schema: "harperdb_studio",
+    table: "livelink",
+    records: [record]
+  };
 
-    var operation = {
-      operation: "insert",
-      schema: "harperdb_studio",
-      table: "livelink",
-      records: [record]
-    };
-    hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-      if (err || result.error) {
-        createLivelinkTable(req).then(() => {
-          hdb_callout.callHarperDB(call_object, operation, function(
-            err2,
-            result2
-          ) {
-            resolve(result2);
-          });
-        });
-      } else resolve(result);
-    });
-  });
+  try {
+    let result = await hdb_callout.callHarperDB(call_object, operation);
+    if (result.error) {
+      await createLivelinkTable(req);
+      result = await hdb_callout.callHarperDB(call_object, operation);
+    }
+    return result;
+  } catch (err) {
+    return err; // UH E
+  }
 };
 
 var updateLiveLink = function(req, id) {
-  return new Promise(function(resolve) {
+  return new Promise(function(resolve, reject) {
     var call_object = {
       username: req.user.username,
       password: req.user.password,
@@ -113,84 +105,72 @@ var updateLiveLink = function(req, id) {
       table: "livelink",
       records: [record]
     };
-    hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-      resolve(result);
-    });
+
+    hdb_callout
+      .callHarperDB(call_object, operation)
+      .then(result => resolve(result))
+      .catch(err => reject(err));
   });
 };
 
-var getFavorites = function(req, res) {
-  return new Promise(function(resolve) {
-    var call_object = {
-      username: req.user.username,
-      password: req.user.password,
-      endpoint_url: req.user.endpoint_url,
-      endpoint_port: req.user.endpoint_port
-    };
+var getFavorites = async function(req, res) {
+  var call_object = {
+    username: req.user.username,
+    password: req.user.password,
+    endpoint_url: req.user.endpoint_url,
+    endpoint_port: req.user.endpoint_port
+  };
 
-    var operation = {
-      operation: "sql",
-      sql:
-        "SELECT * FROM harperdb_studio.query WHERE username = '" +
-        req.user.username +
-        "' ORDER BY date DESC  LIMIT 10"
-    };
+  var operation = {
+    operation: "sql",
+    sql:
+      "SELECT * FROM harperdb_studio.query WHERE username = '" +
+      req.user.username +
+      "' ORDER BY date DESC  LIMIT 10"
+  };
 
-    hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-      if (err || result.error) {
-        createUserFavoriteTable(req, res).then(() => {
-          hdb_callout.callHarperDB(call_object, operation, function(
-            err2,
-            result2
-          ) {
-            resolve(result2);
-          });
-        });
-      } else {
-        resolve(result);
-      }
-    });
-  });
+  try {
+    let result = await hdb_callout.callHarperDB(call_object, operation);
+    if (result.error) {
+      await createUserFavoriteTable(req);
+      result = await hdb_callout.callHarperDB(call_object, operation);
+    }
+    return result;
+  } catch (err) {
+    return err; // UH E
+  }
 };
 
-var getLivelink = function(req) {
-  return new Promise(function(resolve) {
-    var call_object = {
-      username: req.user.username,
-      password: req.user.password,
-      endpoint_url: req.user.endpoint_url,
-      endpoint_port: req.user.endpoint_port
-    };
+var getLivelink = async function(req) {
+  var call_object = {
+    username: req.user.username,
+    password: req.user.password,
+    endpoint_url: req.user.endpoint_url,
+    endpoint_port: req.user.endpoint_port
+  };
 
-    var operation = {
-      operation: "sql",
-      sql:
-        "SELECT * FROM harperdb_studio.livelink WHERE username = '" +
-        req.user.username +
-        "' ORDER BY date DESC  LIMIT 10"
-    };
+  var operation = {
+    operation: "sql",
+    sql:
+      "SELECT * FROM harperdb_studio.livelink WHERE username = '" +
+      req.user.username +
+      "' ORDER BY date DESC  LIMIT 10"
+  };
 
-    hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-      if (err || result.error) {
-        console.log(err);
-
-        createLivelinkTable(req).then(() => {
-          hdb_callout.callHarperDB(call_object, operation, function(
-            err2,
-            result2
-          ) {
-            resolve(result2);
-          });
-        });
-      } else {
-        resolve(result);
-      }
-    });
-  });
+  try {
+    let result = await hdb_callout.callHarperDB(call_object, operation);
+    if (result.error) {
+      await createLivelinkTable(req);
+      result = await hdb_callout.callHarperDB(call_object, operation);
+    }
+    return result;
+  } catch (err) {
+    return err; // UH E
+  }
 };
 
 var getLivelinkById = function(req, id) {
-  return new Promise(function(resolve) {
+  return new Promise(function(resolve, reject) {
     var call_object = {
       username: req.user.username,
       password: req.user.password,
@@ -202,64 +182,64 @@ var getLivelinkById = function(req, id) {
       operation: "sql",
       sql: "SELECT * FROM harperdb_studio.livelink WHERE id = '" + id + "'"
     };
-    hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-      if (err || result.error) resolve(result);
-      else if (result.length > 0) resolve(result[0]);
-      else resolve(result);
-    });
+
+    hdb_callout
+      .callHarperDB(call_object, operation)
+      .then(result => {
+        if (err || result.error) resolve(result);
+        else if (result.length > 0) resolve(result[0]);
+        else resolve(result);
+      })
+      .catch(err => reject(err));
   });
 };
 
-var createUserFavoriteTable = function(req, res) {
-  return new Promise(function(resolve) {
-    var call_object = {
-      username: req.user.username,
-      password: req.user.password,
-      endpoint_url: req.user.endpoint_url,
-      endpoint_port: req.user.endpoint_port
-    };
+var createUserFavoriteTable = async function(req, res) {
+  var call_object = {
+    username: req.user.username,
+    password: req.user.password,
+    endpoint_url: req.user.endpoint_url,
+    endpoint_port: req.user.endpoint_port
+  };
 
-    var operation = {
-      operation: "create_table",
-      schema: "harperdb_studio",
-      table: "query",
-      hash_attribute: "id"
-    };
-    createFavoriteSearchSchema(req, res).then(() => {
-      hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-        if (err || result.error) {
-          resolve(result);
-        }
-        resolve(result);
-      });
-    });
-  });
+  var operation = {
+    operation: "create_table",
+    schema: "harperdb_studio",
+    table: "query",
+    hash_attribute: "id"
+  };
+
+  try {
+    await createFavoriteSearchSchema(req, res);
+    let result = await hdb_callout.callHarperDB(call_object, operation);
+    resovle(result);
+  } catch (err) {
+    reject(err);
+  }
 };
 
-var createLivelinkTable = function(req) {
-  return new Promise(function(resolve) {
-    var call_object = {
-      username: req.user.username,
-      password: req.user.password,
-      endpoint_url: req.user.endpoint_url,
-      endpoint_port: req.user.endpoint_port
-    };
+var createLivelinkTable = async function(req) {
+  var call_object = {
+    username: req.user.username,
+    password: req.user.password,
+    endpoint_url: req.user.endpoint_url,
+    endpoint_port: req.user.endpoint_port
+  };
 
-    var operation = {
-      operation: "create_table",
-      schema: "harperdb_studio",
-      table: "livelink",
-      hash_attribute: "id"
-    };
-    createFavoriteSearchSchema(req).then(() => {
-      hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-        if (err || result.error) {
-          resolve(result);
-        }
-        resolve(result);
-      });
-    });
-  });
+  var operation = {
+    operation: "create_table",
+    schema: "harperdb_studio",
+    table: "livelink",
+    hash_attribute: "id"
+  };
+
+  try {
+    await createFavoriteSearchSchema(req, res);
+    let result = await hdb_callout.callHarperDB(call_object, operation);
+    resovle(result);
+  } catch (err) {
+    reject(err);
+  }
 };
 
 var createFavoriteSearchSchema = function(req) {
@@ -276,12 +256,13 @@ var createFavoriteSearchSchema = function(req) {
       schema: "harperdb_studio"
     };
 
-    hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-      if (err || result.error) {
-        resolve(err);
-      }
-      resolve(result);
-    });
+    hdb_callout
+      .callHarperDB(call_object, operation)
+      .then(result => {
+        if (result.error) throw new Error(result.error);
+        resolve(result);
+      })
+      .catch(err => reject(err));
   });
 };
 
