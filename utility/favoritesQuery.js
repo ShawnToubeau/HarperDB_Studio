@@ -1,16 +1,16 @@
-var hdb_callout = require("./harperDBCallout");
-var guid = require("guid");
+const hdb_callout = require("./harperDBCallout");
+const guid = require("guid");
 
-var setFavorites = function(req, res, favoriteObj) {
+const setFavorites = function(req, res, favoriteObj) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var record = {
+    const record = {
       sql: favoriteObj.sql,
       name: favoriteObj.name,
       note: favoriteObj.note,
@@ -19,7 +19,7 @@ var setFavorites = function(req, res, favoriteObj) {
       id: guid.create()
     };
 
-    var operation = {
+    const operation = {
       operation: "insert",
       schema: "harperdb_studio",
       table: "query",
@@ -41,16 +41,16 @@ var setFavorites = function(req, res, favoriteObj) {
   });
 };
 
-var setLiveLink = function(req, res, en_url, id) {
+const setLiveLink = function(req, res, en_url, id) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var record = {
+    const record = {
       en_url: en_url,
       date: new Date(),
       id: id.value,
@@ -64,7 +64,7 @@ var setLiveLink = function(req, res, en_url, id) {
       isFavorited: req.body.isFavorited
     };
 
-    var operation = {
+    const operation = {
       operation: "insert",
       schema: "harperdb_studio",
       table: "livelink",
@@ -85,16 +85,16 @@ var setLiveLink = function(req, res, en_url, id) {
   });
 };
 
-var updateLiveLink = function(req, id) {
+const updateLiveLink = function(req, id) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var record = {
+    const record = {
       id: id,
       date: new Date(),
       username: req.user.username,
@@ -107,7 +107,7 @@ var updateLiveLink = function(req, id) {
       isFavorited: true
     };
 
-    var operation = {
+    const operation = {
       operation: "update",
       schema: "harperdb_studio",
       table: "livelink",
@@ -119,16 +119,16 @@ var updateLiveLink = function(req, id) {
   });
 };
 
-var getFavorites = function(req, res) {
+const getFavorites = function(req, res) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var operation = {
+    const operation = {
       operation: "sql",
       sql:
         "SELECT * FROM harperdb_studio.query WHERE username = '" +
@@ -153,16 +153,16 @@ var getFavorites = function(req, res) {
   });
 };
 
-var getLivelink = function(req, res) {
+const getLivelink = function(req, res) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var operation = {
+    const operation = {
       operation: "sql",
       sql:
         "SELECT * FROM harperdb_studio.livelink WHERE username = '" +
@@ -189,16 +189,16 @@ var getLivelink = function(req, res) {
   });
 };
 
-var getLivelinkById = function(req, id) {
+const getLivelinkById = function(req, id) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var operation = {
+    const operation = {
       operation: "sql",
       sql: "SELECT * FROM harperdb_studio.livelink WHERE id = '" + id + "'"
     };
@@ -210,16 +210,16 @@ var getLivelinkById = function(req, id) {
   });
 };
 
-var createTable = function(req, res, tableType) {
+const createTable = function(req, res, tableType) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var operation = {
+    const operation = {
       operation: "create_table",
       schema: "harperdb_studio",
       table: tableType,
@@ -236,16 +236,16 @@ var createTable = function(req, res, tableType) {
   });
 };
 
-var createFavoriteSearchSchema = function(req) {
+const createFavoriteSearchSchema = function(req) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var operation = {
+    const operation = {
       operation: "create_schema",
       schema: "harperdb_studio"
     };

@@ -167,7 +167,7 @@ var goToLiveLink = function (liveLinkId) {
     window.open('/livelink/public/' + currentRecent.en_url, '_blank');
 }
 
-var createLiveLinkDataTable = function (obj) { 
+const createLiveLinkDataTable = function (obj) { 
     if (obj.length > 0) {
         var recentData = [];
         obj.forEach(o => {
