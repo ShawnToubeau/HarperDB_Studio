@@ -255,54 +255,44 @@ var generateChart = (graphType, sqlQuery, options) => {
 
 var selectChart = (graphType, data, options, element) => {
     var data = transformDataArray(data, options.hAxis.title, options.vAxis.title);
-    // var barChart = function (datas, options, element) {
-        google.charts.setOnLoadCallback(drawAxisTickColors);
-    
-        function drawAxisTickColors() {
-            var data = google.visualization.arrayToDataTable(datas);
-            var chart = new google.charts.graphType(element);
-            chart.draw(data, google.charts.Bar.convertOptions(options));
-        }
-    // }
+    switch (graphType) {
+        case "Line":
+            lineChart(data, options, element)
+            break;
+        case "Bar":
+            barChart(data, options, element)
+            break;
+        case "Pie":
+            pieChart(data, options, element)
+            break;
+        case "Map":
+            mapChart(data, options, element)
+            break;
+        case "Scatter":
+            scatterChart(data, options, element)
+            break;
+        case "Area":
+            areaChart(data, options, element)
+            break;
+        case "Bubble":
+            bubbleChart(data, options, element)
+            break;
+        case "Column":
+            columnChart(data, options, element)
+            break;
+        case "Gauge":
+            gaugeChart(data, options, element)
+            break;
+        case "SteppedArea":
+            steppedAreaChart(data, options, element)
+            break;
+        case "Treemap":
+            treemapChart(data, options, element)
+            break;
+        case "GeoChart":
+            geoChartChart(data, options, element)
+            break;
 
-    // switch (graphType) {
-    //     case "Line":
-    //         lineChart(data, options, element)
-    //         break;
-    //     case "Bar":
-    //         barChart(data, options, element)
-    //         break;
-    //     case "Pie":
-    //         pieChart(data, options, element)
-    //         break;
-    //     case "Map":
-    //         mapChart(data, options, element)
-    //         break;
-    //     case "Scatter":
-    //         scatterChart(data, options, element)
-    //         break;
-    //     case "Area":
-    //         areaChart(data, options, element)
-    //         break;
-    //     case "Bubble":
-    //         bubbleChart(data, options, element)
-    //         break;
-    //     case "Column":
-    //         columnChart(data, options, element)
-    //         break;
-    //     case "Gauge":
-    //         gaugeChart(data, options, element)
-    //         break;
-    //     case "SteppedArea":
-    //         steppedAreaChart(data, options, element)
-    //         break;
-    //     case "Treemap":
-    //         treemapChart(data, options, element)
-    //         break;
-    //     case "GeoChart":
-    //         geoChartChart(data, options, element)
-    //         break;
-
-    // }
+    }
 }
 // document.getElementById('chart_div')
