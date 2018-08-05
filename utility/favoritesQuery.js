@@ -216,6 +216,8 @@ var getLivelinkById = function(req, id) {
 
 var createTable = function(req, res, tableType) {
   // TODO
+  console.log("createTable()");
+  console.log("req: ", req, "tableType: ", tableType);
   return new Promise(function(resolve) {
     var call_object = {
       username: req.user.username,
