@@ -28,7 +28,6 @@ var setFavorites = function(req, res, favoriteObj) {
     hdb_callout.callHarperDB(call_object, operation, function(err, result) {
       if (err || result.error) {
         createTable(req, res, "query").then(() => {
-          // query
           hdb_callout.callHarperDB(call_object, operation, function(
             err2,
             result2
@@ -42,7 +41,7 @@ var setFavorites = function(req, res, favoriteObj) {
   });
 };
 
-var setLiveLink = function(req, en_url, id) {
+var setLiveLink = function(req, res, en_url, id) {
   return new Promise(function(resolve) {
     var call_object = {
       username: req.user.username,
@@ -74,7 +73,6 @@ var setLiveLink = function(req, en_url, id) {
     hdb_callout.callHarperDB(call_object, operation, function(err, result) {
       if (err || result.error) {
         createTable(req, res, "livelink").then(() => {
-          // livelink
           hdb_callout.callHarperDB(call_object, operation, function(
             err2,
             result2
@@ -141,7 +139,6 @@ var getFavorites = function(req, res) {
     hdb_callout.callHarperDB(call_object, operation, function(err, result) {
       if (err || result.error) {
         createTable(req, res, "query").then(() => {
-          // query
           hdb_callout.callHarperDB(call_object, operation, function(
             err2,
             result2
@@ -156,7 +153,7 @@ var getFavorites = function(req, res) {
   });
 };
 
-var getLivelink = function(req) {
+var getLivelink = function(req, res) {
   return new Promise(function(resolve) {
     var call_object = {
       username: req.user.username,
@@ -178,7 +175,6 @@ var getLivelink = function(req) {
         console.log(err);
 
         createTable(req, res, "livelink").then(() => {
-          // livelink
           hdb_callout.callHarperDB(call_object, operation, function(
             err2,
             result2
@@ -215,9 +211,6 @@ var getLivelinkById = function(req, id) {
 };
 
 var createTable = function(req, res, tableType) {
-  // TODO
-  console.log("createTable()");
-  console.log("req: ", req, "tableType: ", tableType);
   return new Promise(function(resolve) {
     var call_object = {
       username: req.user.username,
@@ -242,32 +235,6 @@ var createTable = function(req, res, tableType) {
     });
   });
 };
-
-// var createLivelinkTable = function(req, res) { // TODO
-//   return new Promise(function(resolve) {
-//     var call_object = {
-//       username: req.user.username,
-//       password: req.user.password,
-//       endpoint_url: req.user.endpoint_url,
-//       endpoint_port: req.user.endpoint_port
-//     };
-
-//     var operation = {
-//       operation: "create_table",
-//       schema: "harperdb_studio",
-//       table: "livelink",
-//       hash_attribute: "id"
-//     };
-//     createFavoriteSearchSchema(req, res).then(() => {
-//       hdb_callout.callHarperDB(call_object, operation, function(err, result) {
-//         if (err || result.error) {
-//           resolve(result);
-//         }
-//         resolve(result);
-//       });
-//     });
-//   });
-// };
 
 var createFavoriteSearchSchema = function(req) {
   return new Promise(function(resolve) {
