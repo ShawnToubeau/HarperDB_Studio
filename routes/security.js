@@ -1,13 +1,3 @@
-/* TODO
- * The following issues have been discovered in this file 
- * and require fixing. Will open and link to GitHub repos
- * on following commit.
- *
- * Issues
- * 1. should inspect err for statusCode and send that instead of default 400
- * 2. unhandeled error case
- * 3. unknown consequences from rejecting error (similar to 2) -- used to resolve err
- * */
 const express = require("express"),
   router = express.Router(),
   hdb_callout = require("../utility/harperDBCallout"),
@@ -65,7 +55,7 @@ router.post("/update_user_active", [isAuthenticated, isSuperAdmin], function(
   hdb_callout
     .callHarperDB(call_object, operation)
     .then(success => res.status(200).send(success))
-    .catch(err => res.status(400).send(err)); // issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/update_user_password", [isAuthenticated, isSuperAdmin], function(
@@ -88,7 +78,7 @@ router.post("/update_user_password", [isAuthenticated, isSuperAdmin], function(
   hdb_callout
     .callHarperDB(call_object, operation)
     .then(success => res.status(200).send(success))
-    .catch(err => res.status(400).send(err)); //issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.get("/add_role", [isAuthenticated, isSuperAdmin], function(req, res) {
@@ -115,7 +105,7 @@ router.get("/add_role", [isAuthenticated, isSuperAdmin], function(req, res) {
       throw new Error({
         message: "Unhandeled error in security.js",
         error: err
-      }); // issue 2
+      });
     });
 });
 
@@ -130,7 +120,7 @@ router.post("/add_role", [isAuthenticated, isSuperAdmin], function(req, res) {
   hdb_callout
     .callHarperDB(call_object, JSON.parse(req.body.operationAddRole))
     .then(result => res.status(200).send(result))
-    .catch(err => res.status(400).send(err)); // issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/alter_role", [isAuthenticated, isSuperAdmin], function(req, res) {
@@ -143,7 +133,7 @@ router.post("/alter_role", [isAuthenticated, isSuperAdmin], function(req, res) {
   hdb_callout
     .callHarperDB(call_object, JSON.parse(req.body.operationEditRole))
     .then(result => res.status(200).send(result))
-    .catch(err => res.status(400).send(err)); // issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.get("/add_user", [isAuthenticated, isSuperAdmin], function(req, res) {
@@ -184,7 +174,7 @@ router.post("/getalluser", [isAuthenticated, isSuperAdmin], function(req, res) {
   hdb_callout
     .callHarperDB(connection, operation)
     .then(result => res.status(200).send(result))
-    .catch(err => res.status(400).send(err)); //issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/getallrole", [isAuthenticated, isSuperAdmin], function(req, res) {
@@ -200,7 +190,7 @@ router.post("/getallrole", [isAuthenticated, isSuperAdmin], function(req, res) {
   hdb_callout
     .callHarperDB(connection, operation)
     .then(result => res.status(200).send(result))
-    .catch(err => res.status(400).send(err)); //issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/add_user", [isAuthenticated, isSuperAdmin], function(req, res) {
@@ -221,7 +211,7 @@ router.post("/add_user", [isAuthenticated, isSuperAdmin], function(req, res) {
   hdb_callout
     .callHarperDB(connection, operation)
     .then(result => res.status(200).send(result))
-    .catch(err => res.status(400).send(err)); //issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/drop_user", [isAuthenticated, isSuperAdmin], function(req, res) {
@@ -239,7 +229,7 @@ router.post("/drop_user", [isAuthenticated, isSuperAdmin], function(req, res) {
   hdb_callout
     .callHarperDB(connection, operation)
     .then(result => res.status(200).send(result))
-    .catch(err => res.status(400).send(err)); //issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/drop_role", [isAuthenticated, isSuperAdmin], function(req, res) {
@@ -258,7 +248,7 @@ router.post("/drop_role", [isAuthenticated, isSuperAdmin], function(req, res) {
   hdb_callout
     .callHarperDB(connection, operation)
     .then(result => res.status(200).send(result))
-    .catch(err => res.status(400).send(err)); //issue 1
+    .catch(err => res.status(400).send(err));
 });
 
 var getListRole = (req, res) => {
@@ -275,7 +265,7 @@ var getListRole = (req, res) => {
     hdb_callout
       .callHarperDB(connection, operation)
       .then(roles => resolve(roles))
-      .catch(err => reject(err)); // issue 3 (similar to 2)
+      .catch(err => reject(err));
   });
 };
 
@@ -293,7 +283,7 @@ var getSchemaAll = (req, res) => {
     hdb_callout
       .callHarperDB(connection, operation)
       .then(schemas => resolve(schemas))
-      .catch(err => reject(err)); // issue 3 (similar to 2)
+      .catch(err => reject(err));
   });
 };
 

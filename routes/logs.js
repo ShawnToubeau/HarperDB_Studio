@@ -53,7 +53,7 @@ router.post("/search", isAuthenticated, function(req, res) {
         result: mapDynamicToStableObject(reduceTypeLogs(result))
       })
     )
-    .catch(err => res.status(400).send(err)); // analyze error status code
+    .catch(err => res.status(400).send(err));
 });
 
 router.get("/individual/:logDetail", isAuthenticated, function(req, res) {

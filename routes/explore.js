@@ -32,7 +32,7 @@ router.get("/sql_search", isAuthenticated, function(req, res) {
   hdb_callout
     .callHarperDB(call_object, operation)
     .then(result => {
-      if (result.error) throw new Error(result.error); // unhandeled HDB error
+      if (result.error) throw new Error(result.error);
       var keywords = reduceDescribeAllObject(result);
       res.render("sql_search", {
         keywords: JSON.stringify(keywords),
@@ -44,7 +44,7 @@ router.get("/sql_search", isAuthenticated, function(req, res) {
         }
       });
     })
-    .catch(err => err); // unhandeled error; consider two cases 1: when HDB returns an error, 2: network error
+    .catch(err => err);
 });
 
 router.get("/sql_search_edit/:livelinkId", isAuthenticated, function(req, res) {
@@ -62,11 +62,10 @@ router.get("/sql_search_edit/:livelinkId", isAuthenticated, function(req, res) {
   favorite
     .getLivelinkById(req, req.params.livelinkId)
     .then(resObj => {
-      // I do not like nested async calls like this. consider using async/await instead.
       hdb_callout
         .callHarperDB(call_object, operation)
         .then(result => {
-          if (result.error) throw new Error(result.error); // unhandeled HDB error
+          if (result.error) throw new Error(result.error);
           var keywords = reduceDescribeAllObject(result);
           res.render("sql_search", {
             keywords: JSON.stringify(keywords),
@@ -79,9 +78,9 @@ router.get("/sql_search_edit/:livelinkId", isAuthenticated, function(req, res) {
             livelinkObject: JSON.stringify(resObj)
           });
         })
-        .catch(err => err); // unhandeled error; consider case on L:68
+        .catch(err => err);
     })
-    .catch(err => res.status(400).send(err)); // inspect error for more accurate statusCode; consider handling the .callHarperDB catch case here as well
+    .catch(err => res.status(400).send(err));
 });
 
 router.get("/sql_search/:sqllink", isAuthenticated, function(req, res) {
@@ -99,7 +98,7 @@ router.get("/sql_search/:sqllink", isAuthenticated, function(req, res) {
   hdb_callout
     .callHarperDB(call_object, operation)
     .then(result => {
-      if (result.error) throw new Error(result.error); // unhandeled error
+      if (result.error) throw new Error(result.error);
       var keywords = reduceDescribeAllObject(result);
       res.render("sql_search", {
         keywords: JSON.stringify(keywords),
@@ -108,7 +107,7 @@ router.get("/sql_search/:sqllink", isAuthenticated, function(req, res) {
         user: req.user
       });
     })
-    .catch(err => err); // unhandeled error
+    .catch(err => err);
 });
 
 router.get("/filter_search", isAuthenticated, function(req, res) {
@@ -132,7 +131,7 @@ router.get("/filter_search", isAuthenticated, function(req, res) {
         user: req.user
       });
     })
-    .catch(err => err); // unhandeled error
+    .catch(err => err);
 });
 
 router.post("/filter_search", isAuthenticated, function(req, res) {
@@ -156,7 +155,7 @@ router.post("/filter_search", isAuthenticated, function(req, res) {
         sql: req.body.sql
       })
     )
-    .catch(err => res.status(400).send(err)); // inspect err for status code
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/setfavorite", isAuthenticated, function(req, res) {

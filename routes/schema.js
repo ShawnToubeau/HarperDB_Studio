@@ -1,7 +1,3 @@
-/* getting tired of rewriting the same comments
- * on unhandled errors. Will comment: '// UH E' 
- * to indicate unhandled error. - Ethan
- * */
 const express = require("express"),
   router = express.Router(),
   hdb_callout = require("../utility/harperDBCallout"),
@@ -29,7 +25,7 @@ router.get("/", [isAuthenticated, breadcrumb], function(req, res) {
         user: req.user
       })
     )
-    .catch(err => err); // UH E
+    .catch(err => err);
 });
 
 router.post("/", isAuthenticated, async function(req, res) {
@@ -67,13 +63,11 @@ router.post("/", isAuthenticated, async function(req, res) {
       user: req.user
     });
   } catch (err) {
-    return err; // UH E
+    return err;
   }
 });
 
 router.get("/:schemaName", isAuthenticated, function(req, res) {
-  // could use object destructuring here; probably other places this can be updated too
-  // i.e. call_object = { ...req.user }
   var call_object = {
     username: req.user.username,
     password: req.user.password,
@@ -95,7 +89,7 @@ router.get("/:schemaName", isAuthenticated, function(req, res) {
         user: req.user
       })
     )
-    .catch(err => err); // UH E
+    .catch(err => err);
 });
 
 router.post("/addtable/:schemaName", isAuthenticated, async function(req, res) {
@@ -129,7 +123,7 @@ router.post("/addtable/:schemaName", isAuthenticated, async function(req, res) {
       user: req.user
     });
   } catch (err) {
-    return err; // UH E
+    return err;
   }
 });
 
@@ -181,7 +175,7 @@ router.post("/upload_csv/:schemaName", isAuthenticated, async function(
       user: req.user
     });
   } catch (err) {
-    return err; // UH E
+    return err;
   }
 });
 
@@ -214,7 +208,7 @@ router.post("/delete", isAuthenticated, function(req, res) {
       if (req.body.deleteType == "schema") res.redirect("/schema");
       else res.redirect("/schema/" + req.body.schemaName);
     })
-    .catch(err => err); // UH E
+    .catch(err => err);
 });
 
 router.post("/records", isAuthenticated, function(req, res) {
@@ -236,7 +230,7 @@ router.post("/records", isAuthenticated, function(req, res) {
   hdb_callout
     .callHarperDB(call_object, operation)
     .then(message => res.status(200).send(message))
-    .catch(err => res.status(400).send(err)); // check error statuscode
+    .catch(err => res.status(400).send(err));
 });
 
 router.post("/csv", isAuthenticated, async function(req, res) {
@@ -276,7 +270,7 @@ router.post("/csv", isAuthenticated, async function(req, res) {
       user: req.user
     });
   } catch (err) {
-    return err; // UH E
+    return err;
   }
 });
 
