@@ -1,15 +1,15 @@
-var hdb_callout = require("./harperDBCallout");
-var guid = require("guid");
+const hdb_callout = require("./harperDBCallout");
+const guid = require("guid");
 
-var setFavorites = async function(req, res, favoriteObj) {
-  var call_object = {
+const setFavorites = async function(req, res, favoriteObj) {
+  const call_object = {
     username: req.user.username,
     password: req.user.password,
     endpoint_url: req.user.endpoint_url,
     endpoint_port: req.user.endpoint_port
   };
 
-  var record = {
+  const record = {
     sql: favoriteObj.sql,
     name: favoriteObj.name,
     note: favoriteObj.note,
@@ -18,7 +18,7 @@ var setFavorites = async function(req, res, favoriteObj) {
     id: guid.create()
   };
 
-  var operation = {
+  const operation = {
     operation: "insert",
     schema: "harperdb_studio",
     table: "query",
@@ -28,7 +28,7 @@ var setFavorites = async function(req, res, favoriteObj) {
   try {
     let result = await hdb_callout.callHarperDB(call_object, operation);
     if (result.error) {
-      await createUserFavoriteTable(req, res);
+      await createTable(req, res, "query");
       result = await hdb_callout.callHarperDB(call_object, operation);
     }
     return result;
@@ -36,15 +36,15 @@ var setFavorites = async function(req, res, favoriteObj) {
     return err; // UH E
   }
 };
-var setLiveLink = async function(req, en_url, id) {
-  var call_object = {
+const setLiveLink = async function(req, res, en_url, id) {
+  const call_object = {
     username: req.user.username,
     password: req.user.password,
     endpoint_url: req.user.endpoint_url,
     endpoint_port: req.user.endpoint_port
   };
 
-  var record = {
+  const record = {
     en_url: en_url,
     date: new Date(),
     id: id.value,
@@ -58,7 +58,7 @@ var setLiveLink = async function(req, en_url, id) {
     isFavorited: req.body.isFavorited
   };
 
-  var operation = {
+  const operation = {
     operation: "insert",
     schema: "harperdb_studio",
     table: "livelink",
@@ -68,7 +68,7 @@ var setLiveLink = async function(req, en_url, id) {
   try {
     let result = await hdb_callout.callHarperDB(call_object, operation);
     if (result.error) {
-      await createLivelinkTable(req);
+      await createTable(req, res, "livelink");
       result = await hdb_callout.callHarperDB(call_object, operation);
     }
     return result;
@@ -77,16 +77,16 @@ var setLiveLink = async function(req, en_url, id) {
   }
 };
 
-var updateLiveLink = function(req, id) {
+const updateLiveLink = function(req, id) {
   return new Promise(function(resolve, reject) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var record = {
+    const record = {
       id: id,
       date: new Date(),
       username: req.user.username,
@@ -99,7 +99,7 @@ var updateLiveLink = function(req, id) {
       isFavorited: true
     };
 
-    var operation = {
+    const operation = {
       operation: "update",
       schema: "harperdb_studio",
       table: "livelink",
@@ -113,15 +113,15 @@ var updateLiveLink = function(req, id) {
   });
 };
 
-var getFavorites = async function(req, res) {
-  var call_object = {
+const getFavorites = async function(req, res) {
+  const call_object = {
     username: req.user.username,
     password: req.user.password,
     endpoint_url: req.user.endpoint_url,
     endpoint_port: req.user.endpoint_port
   };
 
-  var operation = {
+  const operation = {
     operation: "sql",
     sql:
       "SELECT * FROM harperdb_studio.query WHERE username = '" +
@@ -132,7 +132,7 @@ var getFavorites = async function(req, res) {
   try {
     let result = await hdb_callout.callHarperDB(call_object, operation);
     if (result.error) {
-      await createUserFavoriteTable(req);
+      await createTable(req, res, "query");
       result = await hdb_callout.callHarperDB(call_object, operation);
     }
     return result;
@@ -141,15 +141,15 @@ var getFavorites = async function(req, res) {
   }
 };
 
-var getLivelink = async function(req) {
-  var call_object = {
+const getLivelink = async function(req, res) {
+  const call_object = {
     username: req.user.username,
     password: req.user.password,
     endpoint_url: req.user.endpoint_url,
     endpoint_port: req.user.endpoint_port
   };
 
-  var operation = {
+  const operation = {
     operation: "sql",
     sql:
       "SELECT * FROM harperdb_studio.livelink WHERE username = '" +
@@ -160,7 +160,7 @@ var getLivelink = async function(req) {
   try {
     let result = await hdb_callout.callHarperDB(call_object, operation);
     if (result.error) {
-      await createLivelinkTable(req);
+      await createTable(req, res, "livelink");
       result = await hdb_callout.callHarperDB(call_object, operation);
     }
     return result;
@@ -169,16 +169,16 @@ var getLivelink = async function(req) {
   }
 };
 
-var getLivelinkById = function(req, id) {
+const getLivelinkById = function(req, id) {
   return new Promise(function(resolve, reject) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var operation = {
+    const operation = {
       operation: "sql",
       sql: "SELECT * FROM harperdb_studio.livelink WHERE id = '" + id + "'"
     };
@@ -194,18 +194,18 @@ var getLivelinkById = function(req, id) {
   });
 };
 
-var createUserFavoriteTable = async function(req, res) {
-  var call_object = {
+const createTable = async function(req, res, tableType) {
+  const call_object = {
     username: req.user.username,
     password: req.user.password,
     endpoint_url: req.user.endpoint_url,
     endpoint_port: req.user.endpoint_port
   };
 
-  var operation = {
+  const operation = {
     operation: "create_table",
     schema: "harperdb_studio",
-    table: "query",
+    table: tableType,
     hash_attribute: "id"
   };
 
@@ -218,40 +218,64 @@ var createUserFavoriteTable = async function(req, res) {
   }
 };
 
-var createLivelinkTable = async function(req) {
-  var call_object = {
-    username: req.user.username,
-    password: req.user.password,
-    endpoint_url: req.user.endpoint_url,
-    endpoint_port: req.user.endpoint_port
-  };
+// const createUserFavoriteTable = async function(req, res) {
+//   const call_object = {
+//     username: req.user.username,
+//     password: req.user.password,
+//     endpoint_url: req.user.endpoint_url,
+//     endpoint_port: req.user.endpoint_port
+//   };
 
-  var operation = {
-    operation: "create_table",
-    schema: "harperdb_studio",
-    table: "livelink",
-    hash_attribute: "id"
-  };
+//   const operation = {
+//     operation: "create_table",
+//     schema: "harperdb_studio",
+//     table: "query",
+//     hash_attribute: "id"
+//   };
 
-  try {
-    await createFavoriteSearchSchema(req, res);
-    let result = await hdb_callout.callHarperDB(call_object, operation);
-    resovle(result);
-  } catch (err) {
-    reject(err);
-  }
-};
+//   try {
+//     await createFavoriteSearchSchema(req, res);
+//     let result = await hdb_callout.callHarperDB(call_object, operation);
+//     resovle(result);
+//   } catch (err) {
+//     reject(err);
+//   }
+// };
 
-var createFavoriteSearchSchema = function(req) {
+// const createLivelinkTable = async function(req) {
+//   const call_object = {
+//     username: req.user.username,
+//     password: req.user.password,
+//     endpoint_url: req.user.endpoint_url,
+//     endpoint_port: req.user.endpoint_port
+//   };
+
+//   const operation = {
+//     operation: "create_table",
+//     schema: "harperdb_studio",
+//     table: "livelink",
+//     hash_attribute: "id"
+//   };
+
+//   try {
+//     await createFavoriteSearchSchema(req, res);
+//     let result = await hdb_callout.callHarperDB(call_object, operation);
+//     resovle(result);
+//   } catch (err) {
+//     reject(err);
+//   }
+// };
+
+const createFavoriteSearchSchema = function(req) {
   return new Promise(function(resolve) {
-    var call_object = {
+    const call_object = {
       username: req.user.username,
       password: req.user.password,
       endpoint_url: req.user.endpoint_url,
       endpoint_port: req.user.endpoint_port
     };
 
-    var operation = {
+    const operation = {
       operation: "create_schema",
       schema: "harperdb_studio"
     };
@@ -269,7 +293,7 @@ var createFavoriteSearchSchema = function(req) {
 module.exports = {
   setFavorites: setFavorites,
   createFavoriteSearchSchema: createFavoriteSearchSchema,
-  createUserFavoriteTable: createUserFavoriteTable,
+  createUserFavoriteTable: createTable,
   getFavorites: getFavorites,
   setLiveLink: setLiveLink,
   getLivelink: getLivelink,
