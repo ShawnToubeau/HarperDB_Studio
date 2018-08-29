@@ -218,54 +218,6 @@ const createTable = async function(req, res, tableType) {
   }
 };
 
-// const createUserFavoriteTable = async function(req, res) {
-//   const call_object = {
-//     username: req.user.username,
-//     password: req.user.password,
-//     endpoint_url: req.user.endpoint_url,
-//     endpoint_port: req.user.endpoint_port
-//   };
-
-//   const operation = {
-//     operation: "create_table",
-//     schema: "harperdb_studio",
-//     table: "query",
-//     hash_attribute: "id"
-//   };
-
-//   try {
-//     await createFavoriteSearchSchema(req, res);
-//     let result = await hdb_callout.callHarperDB(call_object, operation);
-//     resovle(result);
-//   } catch (err) {
-//     reject(err);
-//   }
-// };
-
-// const createLivelinkTable = async function(req) {
-//   const call_object = {
-//     username: req.user.username,
-//     password: req.user.password,
-//     endpoint_url: req.user.endpoint_url,
-//     endpoint_port: req.user.endpoint_port
-//   };
-
-//   const operation = {
-//     operation: "create_table",
-//     schema: "harperdb_studio",
-//     table: "livelink",
-//     hash_attribute: "id"
-//   };
-
-//   try {
-//     await createFavoriteSearchSchema(req, res);
-//     let result = await hdb_callout.callHarperDB(call_object, operation);
-//     resovle(result);
-//   } catch (err) {
-//     reject(err);
-//   }
-// };
-
 const createFavoriteSearchSchema = function(req) {
   return new Promise(function(resolve) {
     const call_object = {
